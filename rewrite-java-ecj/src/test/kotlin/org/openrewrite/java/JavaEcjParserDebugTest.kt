@@ -21,196 +21,200 @@ import org.openrewrite.java.tree.*
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11AnnotationTest : Java11Test(), AnnotationTest
+class JavaEcjAnnotationTest : JavaEcjTest(), AnnotationTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11ArrayAccessTest : Java11Test(), ArrayAccessTest
+class JavaEcjArrayAccessTest : JavaEcjTest(), ArrayAccessTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11ArrayTypeTest : Java11Test(), ArrayTypeTest
+class JavaEcjArrayTypeTest : JavaEcjTest(), ArrayTypeTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11AssertTest : Java11Test(), AssertTest
+class JavaEcjAssertTest : JavaEcjTest(), AssertTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11AssignOpTest : Java11Test(), AssignOpTest
+class JavaEcjAssignOpTest : JavaEcjTest(), AssignOpTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11AssignTest : Java11Test(), AssignTest
+class JavaEcjAssignTest : JavaEcjTest(), AssignTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11BlockTest : Java11Test(), BlockTest
+class JavaEcjBlockTest : JavaEcjTest(), BlockTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11BreakTest : Java11Test(), BreakTest
+class JavaEcjBreakTest : JavaEcjTest(), BreakTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11BodyTest : Java11Test(), BodyTest
+class JavaEcjBodyTest : JavaEcjTest(), BodyTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11ClassDeclTest : Java11Test(), ClassDeclTest
+class JavaEcjClassDeclTest : JavaEcjTest(), ClassDeclTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11CommentTest : Java11Test(), CommentTest
+class JavaEcjCommentTest : JavaEcjTest(), CommentTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11CompilationUnitTest : Java11Test(), CompilationUnitTest
+class JavaEcjCompilationUnitTest : JavaEcjTest(), CompilationUnitTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11ContinueTest : Java11Test(), ContinueTest
+class JavaEcjContinueTest : JavaEcjTest(), ContinueTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11CursorTest : Java11Test(), CursorTest
+class JavaEcjCursorTest : JavaEcjTest(), CursorTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11CyclicTypeTest : Java11Test(), CyclicTypeTest
+class JavaEcjCyclicTypeTest : JavaEcjTest(), CyclicTypeTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11DoWhileLoopTest : Java11Test(), DoWhileLoopTest
+class JavaEcjDoWhileLoopTest : JavaEcjTest(), DoWhileLoopTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11EmptyTest : Java11Test(), EmptyTest
+class JavaEcjEmptyTest : JavaEcjTest(), EmptyTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11EnumTest : Java11Test(), EnumTest
+class JavaEcjEnumTest : JavaEcjTest(), EnumTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11FieldAccessTest : Java11Test(), FieldAccessTest
+class JavaEcjFieldAccessTest : JavaEcjTest(), FieldAccessTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11ForEachLoopTest : Java11Test(), ForEachLoopTest
+class JavaEcjForEachLoopTest : JavaEcjTest(), ForEachLoopTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11IdentTest : Java11Test(), IdentTest
+class JavaEcjIdentTest : JavaEcjTest(), IdentTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11IfTest : Java11Test(), IfTest
+class JavaEcjIfTest : JavaEcjTest(), IfTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11ImportTest : Java11Test(), ImportTest
+class JavaEcjImportTest : JavaEcjTest(), ImportTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11InstanceofTest : Java11Test(), InstanceOfTest
+class JavaEcjInstanceofTest : JavaEcjTest(), InstanceOfTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11JavaTypeTest : Java11Test(), JavaTypeTest
+class JavaEcjJavaTypeTest : JavaEcjTest(), JavaTypeTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11LabelTest : Java11Test(), LabelTest
+class JavaEcjLabelTest : JavaEcjTest(), LabelTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11LambdaTest : Java11Test(), LambdaTest
+class JavaEcjLambdaTest : JavaEcjTest(), LambdaTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11LiteralTest : Java11Test(), LiteralTest
+class JavaEcjLiteralTest : JavaEcjTest(), LiteralTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11MemberReferenceTest : Java11Test(), MemberReferenceTest
+class JavaEcjMemberReferenceTest : JavaEcjTest(), MemberReferenceTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11MethodDeclTest : Java11Test(), MethodDeclTest
+class JavaEcjMethodDeclTest : JavaEcjTest(), MethodDeclTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11MethodInvocationTest : Java11Test(), MethodInvocationTest
+class JavaEcjMethodInvocationTest : JavaEcjTest(), MethodInvocationTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11ModifierTest : Java11Test(), ModifierTest
+class JavaEcjModifierTest : JavaEcjTest(), ModifierTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11NewArrayTest : Java11Test(), NewArrayTest
+class JavaEcjNewArrayTest : JavaEcjTest(), NewArrayTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11NewClassTest : Java11Test(), NewClassTest
+class JavaEcjNewClassTest : JavaEcjTest(), NewClassTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11PackageTest : Java11Test(), PackageTest
+class JavaEcjPackageTest : JavaEcjTest(), PackageTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11ParenthesesTest : Java11Test(), ParenthesesTest
+class JavaEcjParenthesesTest : JavaEcjTest(), ParenthesesTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11PrimitiveTest : Java11Test(), PrimitiveTest
+class JavaEcjPrimitiveTest : JavaEcjTest(), PrimitiveTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11ReturnTest : Java11Test(), ReturnTest
+class JavaEcjReturnTest : JavaEcjTest(), ReturnTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11SwitchTest : Java11Test(), SwitchTest
+class JavaEcjSwitchTest : JavaEcjTest(), SwitchTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11SynchronizedTest : Java11Test(), SynchronizedTest
+class JavaEcjSynchronizedTest : JavaEcjTest(), SynchronizedTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11TernaryTest : Java11Test(), TernaryTest
+class JavaEcjTernaryTest : JavaEcjTest(), TernaryTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11ThrowTest : Java11Test(), ThrowTest
+class JavaEcjThrowTest : JavaEcjTest(), ThrowTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11CompilationUnitSerializerTest : Java11Test(), CompilationUnitSerializerTest
+class JavaEcjTreeBuilderTest : JavaEcjTest(), TreeBuilderTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11TryCatchTest : Java11Test(), TryCatchTest
+class JavaEcjCompilationUnitSerializerTest : JavaEcjTest(), CompilationUnitSerializerTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11TypeCastTest : Java11Test(), TypeCastTest
+class JavaEcjTryCatchTest : JavaEcjTest(), TryCatchTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11TypeParameterAndWildcardTest : Java11Test(), TypeParameterAndWildcardTest
+class JavaEcjTypeCastTest : JavaEcjTest(), TypeCastTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11UnaryTest : Java11Test(), UnaryTest
+class JavaEcjTypeParameterAndWildcardTest : JavaEcjTest(), TypeParameterAndWildcardTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11VariableDeclsTest : Java11Test(), VariableDeclsTest
+class JavaEcjUnaryTest : JavaEcjTest(), UnaryTest
 
 @DebugOnly
 @ExtendWith(JavaParserResolver::class)
-class Java11WhileLoopTest : Java11Test(), WhileLoopTest
+class JavaEcjVariableDeclsTest : JavaEcjTest(), VariableDeclsTest
+
+@DebugOnly
+@ExtendWith(JavaParserResolver::class)
+class JavaEcjWhileLoopTest : JavaEcjTest(), WhileLoopTest

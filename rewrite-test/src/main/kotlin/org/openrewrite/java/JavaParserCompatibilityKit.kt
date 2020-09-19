@@ -18,6 +18,7 @@ package org.openrewrite.java
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.extension.ExtendWith
 import org.openrewrite.java.tree.*
+import org.openrewrite.java.utilities.SpansMultipleLinesTest
 
 @ExtendWith(JavaParserResolver::class)
 abstract class JavaParserCompatibilityKit {
@@ -55,6 +56,9 @@ abstract class JavaParserCompatibilityKit {
 
     @Nested
     inner class CommentTck : CommentTest
+
+    @Nested
+    inner class CompilationUnitSerializerTck : CompilationUnitSerializerTest
 
     @Nested
     inner class CompilationUnitTck : CompilationUnitTest
@@ -138,6 +142,9 @@ abstract class JavaParserCompatibilityKit {
     inner class ReturnTck : ReturnTest
 
     @Nested
+    inner class SpansMultipleLinesTck : SpansMultipleLinesTest
+
+    @Nested
     inner class SwitchTck : SwitchTest
 
     @Nested
@@ -148,12 +155,6 @@ abstract class JavaParserCompatibilityKit {
 
     @Nested
     inner class ThrowTck : ThrowTest
-
-    @Nested
-    inner class TreeBuilderTck : TreeBuilderTest
-
-    @Nested
-    inner class CompilationUnitSerializerTck : CompilationUnitSerializerTest
 
     @Nested
     inner class TryCatchTck : TryCatchTest

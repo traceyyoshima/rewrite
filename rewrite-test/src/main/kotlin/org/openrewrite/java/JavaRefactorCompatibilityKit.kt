@@ -17,6 +17,7 @@ package org.openrewrite.java
 
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.extension.ExtendWith
+import org.openrewrite.java.tree.TreeBuilderTest
 import org.openrewrite.java.utilities.SpansMultipleLinesTest
 
 @ExtendWith(JavaParserResolver::class)
@@ -93,7 +94,7 @@ abstract class JavaRefactorCompatibilityKit {
     inner class ReorderMethodArgumentsTck : ReorderMethodArgumentsTest
 
     @Nested
-    inner class SpansMultipleLinesTck : SpansMultipleLinesTest
+    inner class TreeBuilderTck : TreeBuilderTest
 
     @Nested
     inner class UnwrapParenthesesTck : UnwrapParenthesesTest
