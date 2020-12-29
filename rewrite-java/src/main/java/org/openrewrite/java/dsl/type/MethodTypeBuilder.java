@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.openrewrite.java.tree;
+package org.openrewrite.java.dsl.type;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.openrewrite.Incubating;
 import org.openrewrite.internal.StringUtils;
+import org.openrewrite.java.tree.Flag;
+import org.openrewrite.java.tree.JavaType;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,7 +33,7 @@ import java.util.stream.Collectors;
  *     EXAMPLE:
  *
  *     import static org.openrewrite.java.tree.MethodInvocationBuilder.newMethodInvocation;
- *     import static org.openrewrite.java.tree.MethodTypeBuilder.newMethodType;
+ *     import static org.openrewrite.java.tree.dsl.type.MethodTypeBuilder.newMethodType;
  *     .
  *     .
  *     .
@@ -66,8 +68,7 @@ public class MethodTypeBuilder {
     String name;
     List<Parameter> parameters = new ArrayList<>();
 
-    public static MethodTypeBuilder newMethodType() {
-        return new MethodTypeBuilder();
+    MethodTypeBuilder() {
     }
 
     /**

@@ -19,7 +19,7 @@ import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.openrewrite.java.JavaParser
 import org.openrewrite.java.tree.JavaType.GenericTypeVariable
-import org.openrewrite.java.tree.MethodTypeBuilder.newMethodType
+import org.openrewrite.java.dsl.type.JavaTypes.methodType
 import java.lang.IllegalArgumentException
 
 interface MethodTypeBuilderTest {
@@ -27,14 +27,14 @@ interface MethodTypeBuilderTest {
     @Test
     fun errorThrownIfMethodNameIsNotDefined() {
         assertThatThrownBy {
-            newMethodType().declaringClass("A").build() }
+            methodType().declaringClass("A").build() }
             .isInstanceOf(IllegalArgumentException::class.java)
             .hasMessage("The method name is required.")
     }
 
     @Test
     fun errorThrownIfDeclaringTypeIsNotDefined() {
-        assertThatThrownBy { newMethodType().name("notification").build() }
+        assertThatThrownBy { methodType().name("notification").build() }
             .isInstanceOf(IllegalArgumentException::class.java)
             .hasMessage("The declaring type is required.")
     }
@@ -54,7 +54,7 @@ interface MethodTypeBuilderTest {
         """.trimIndent())
         val b = (((a[0].classes[0].body.statements[0] as J.MethodDecl).body.statements[0] as J.VariableDecls).vars[0].initializer.type as JavaType.Method).declaringType
 
-        val m = newMethodType()
+        val m = methodType()
             .name("notification")
             .declaringClass("A")
             .build()
@@ -64,7 +64,7 @@ interface MethodTypeBuilderTest {
 
     @Test
     fun methodTypeWithoutReturnType(jp: JavaParser) {
-        val method = newMethodType()
+        val method = methodType()
             .name("notification")
             .declaringClass("A")
             .build()
@@ -94,13 +94,13 @@ interface MethodTypeBuilderTest {
         val expectedReturnType1 = (((cu[0].classes[0].body.statements[0] as J.MethodDecl).body.statements[0] as J.VariableDecls).vars[0].initializer.type as JavaType.Method).resolvedSignature.returnType
         val expectedReturnType2 = (((cu[0].classes[0].body.statements[0] as J.MethodDecl).body.statements[1] as J.VariableDecls).vars[0].initializer.type as JavaType.Method).resolvedSignature.returnType
 
-        val method1 = newMethodType()
+        val method1 = methodType()
             .name("notification1")
             .declaringClass("A")
             .returnType("java.lang.String")
             .build()
 
-        val method2 = newMethodType()
+        val method2 = methodType()
             .name("notification2")
             .declaringClass("A")
             .returnType(JavaType.Array(JavaType.buildType("java.lang.String")))
@@ -125,7 +125,7 @@ interface MethodTypeBuilderTest {
         """.trimIndent())
         val expectedReturnType = (((cu[0].classes[0].body.statements[0] as J.MethodDecl).body.statements[0] as J.VariableDecls).vars[0].initializer.type as JavaType.Method)
 
-        val method1 = newMethodType()
+        val method1 = methodType()
             .name("notification")
             .declaringClass("A")
             .returnType(
@@ -134,7 +134,7 @@ interface MethodTypeBuilderTest {
             )
             .build()
 
-        val method2 = newMethodType()
+        val method2 = methodType()
             .name("notification")
             .declaringClass("A")
             .returnType(
@@ -165,13 +165,13 @@ interface MethodTypeBuilderTest {
         """.trimIndent())
         val expectedParameters = (((cu[0].classes[0].body.statements[0] as J.MethodDecl).body.statements[0] as J.VariableDecls).vars[0].initializer.type as JavaType.Method).resolvedSignature.paramTypes
 
-        val method1 = newMethodType()
+        val method1 = methodType()
             .name("notification")
             .declaringClass("A")
             .parameter("java.lang.String", "message")
             .build()
 
-        val method2 = newMethodType()
+        val method2 = methodType()
             .name("notification")
             .declaringClass("A")
             .parameter(JavaType.buildType("java.lang.String"), "message")
@@ -200,13 +200,13 @@ interface MethodTypeBuilderTest {
         """.trimIndent())
         val expectedMethod = (((cu[0].classes[0].body.statements[0] as J.MethodDecl).body.statements[0] as J.VariableDecls).vars[0].initializer.type as JavaType.Method)
 
-        val method1 = newMethodType()
+        val method1 = methodType()
             .name("notification")
             .declaringClass("A")
             .parameter("java.lang.String", "T", "message")
             .build()
 
-        val method2 = newMethodType()
+        val method2 = methodType()
             .name("notification")
             .declaringClass("A")
             .parameter(
@@ -242,7 +242,7 @@ interface MethodTypeBuilderTest {
 
         val expectedMethod = (((cu[0].classes[0].body.statements[0] as J.MethodDecl).body.statements[0] as J.VariableDecls).vars[0].initializer.type as JavaType.Method)
 
-        val method1 = newMethodType()
+        val method1 = methodType()
             .name("notifications")
             .declaringClass("A")
             .returnType("java.lang.String")
