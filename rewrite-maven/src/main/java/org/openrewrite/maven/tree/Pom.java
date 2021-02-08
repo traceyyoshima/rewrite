@@ -195,11 +195,22 @@ public class Pom implements Marker {
     public static class Repository {
         String id;
 
+        @With
         @EqualsAndHashCode.Include
         URI uri;
 
         boolean releases;
         boolean snapshots;
+
+        public boolean acceptsVersion(String version) {
+            if (version.endsWith("-SNAPSHOT")) {
+                return snapshots;
+            } else if (uri.toString().equalsIgnoreCase("https://repo.spring.io/milestone")) {
+                // special case this repository since it will be so commonly used
+                return version.matches(".*(M|RC)\\d+$");
+            }
+            return releases;
+        }
     }
 
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)

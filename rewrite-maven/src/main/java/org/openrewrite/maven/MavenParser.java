@@ -74,7 +74,7 @@ public class MavenParser implements Parser<Maven> {
 
         List<Maven> parsed = projectPoms.stream()
                 .map(raw -> new RawMavenResolver(downloader, activeProfiles,
-                        mavenSettings, resolveOptional, ctx).resolve(raw))
+                        mavenSettings, resolveOptional, ctx, relativeTo).resolve(raw))
                 .filter(Objects::nonNull)
                 .map(xmlDoc -> new Maven(xmlDoc, mavenSettings))
                 .collect(toCollection(ArrayList::new));

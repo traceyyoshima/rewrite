@@ -25,11 +25,13 @@ import org.openrewrite.Parser;
 import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.maven.internal.MavenXmlMapper;
 import org.openrewrite.maven.internal.RawRepositories;
+import org.openrewrite.maven.tree.Pom;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
@@ -75,13 +77,14 @@ public class MavenSettings {
                 }
             }
         }
+
         return applyMirrors(activeRepositories);
     }
 
-    public List<RawRepositories.Repository> applyMirrors(Collection<RawRepositories.Repository> repositories) {
+    public List<Pom.Repository> applyMirrors(Collection<Pom.Repository> repositories) {
         if (mirrors == null) {
             if (repositories instanceof List) {
-                return (List<RawRepositories.Repository>) repositories;
+                return (List<Pom.Repository>) repositories;
             } else {
                 return new ArrayList<>(repositories);
             }
@@ -90,7 +93,7 @@ public class MavenSettings {
         }
     }
 
-    public RawRepositories.Repository applyMirrors(RawRepositories.Repository repository) {
+    public Pom.Repository applyMirrors(Pom.Repository repository) {
         if (mirrors == null) {
             return repository;
         } else {
@@ -145,15 +148,15 @@ public class MavenSettings {
         @JacksonXmlElementWrapper(useWrapping = false)
         List<Mirror> mirrors = emptyList();
 
-        public List<RawRepositories.Repository> applyMirrors(Collection<RawRepositories.Repository> repositories) {
+        public List<Pom.Repository> applyMirrors(Collection<Pom.Repository> repositories) {
             return repositories.stream()
                     .map(this::applyMirrors)
                     .distinct()
                     .collect(Collectors.toList());
         }
 
-        public RawRepositories.Repository applyMirrors(RawRepositories.Repository repository) {
-            RawRepositories.Repository result = repository;
+        public Pom.Repository applyMirrors(Pom.Repository repository) {
+            Pom.Repository result = repository;
             for (Mirror mirror : mirrors) {
                 result = mirror.apply(result);
             }
@@ -195,9 +198,9 @@ public class MavenSettings {
 
         @Nullable
         @NonFinal
-        private ApplicabilitySpec applicabilitySpec = null;
+        private Predicate<Pom.Repository> applicability = null;
 
-        private ApplicabilitySpec buildApplicabilitySpec() {
+        private Predicate<Pom.Repository> buildApplicability() {
             if (mirrorOf == null) {
                 return APPLICABLE_TO_NOTHING;
             }
@@ -222,29 +225,25 @@ public class MavenSettings {
                 }
             }
 
-            return new DefaultApplicabilitySpec(externalOnly, excludedRepos, includedRepos);
+            return new DefaultApplicability(externalOnly, excludedRepos, includedRepos);
         }
 
-        private interface ApplicabilitySpec {
-            boolean isApplicable(RawRepositories.Repository repo);
-        }
+        private static Predicate<Pom.Repository> APPLICABLE_TO_EVERYTHING = repo -> true;
+        private static Predicate<Pom.Repository> APPLICABLE_TO_NOTHING = repo -> false;
 
-        private static ApplicabilitySpec APPLICABLE_TO_EVERYTHING = repo -> true;
-        private static ApplicabilitySpec APPLICABLE_TO_NOTHING = repo -> false;
-
-        private static class DefaultApplicabilitySpec implements ApplicabilitySpec {
+        private static class DefaultApplicability implements Predicate<Pom.Repository> {
             final boolean isExternalOnly;
             final Set<String> excludedRepos;
             final Set<String> includedRepos;
 
-            DefaultApplicabilitySpec(boolean isExternalOnly, Set<String> excludedRepos, Set<String> includedRepos) {
+            DefaultApplicability(boolean isExternalOnly, Set<String> excludedRepos, Set<String> includedRepos) {
                 this.isExternalOnly = isExternalOnly;
                 this.excludedRepos = excludedRepos;
                 this.includedRepos = includedRepos;
             }
 
             @Override
-            public boolean isApplicable(RawRepositories.Repository repo) {
+            public boolean test(Pom.Repository repo) {
                 if (isExternalOnly && isInternal(repo)) {
                     return false;
                 }
@@ -258,13 +257,12 @@ public class MavenSettings {
                 return !excludedRepos.contains(repo.getId()) && includedRepos.contains(repo.getId());
             }
 
-            private boolean isInternal(RawRepositories.Repository repo) {
-                URI repoUri = URI.create(repo.getUrl());
-                if (repoUri.getScheme().startsWith("file")) {
+            private boolean isInternal(Pom.Repository repo) {
+                if (repo.getUri().getScheme().startsWith("file")) {
                     return true;
                 }
                 // Best-effort basis, by no means a full guarantee of detecting all possible local URIs
-                return repoUri.getHost().equals("localhost") || repoUri.getHost().equals("127.0.0.1");
+                return repo.getUri().getHost().equals("localhost") || repo.getUri().getHost().equals("127.0.0.1");
             }
         }
 
@@ -273,22 +271,18 @@ public class MavenSettings {
          * If this mirror is applicable, a Repository with the URL specified in this mirror will be returned.
          * If this mirror is inapplicable, the supplied repository will be returned unmodified.
          */
-        public RawRepositories.Repository apply(RawRepositories.Repository repo) {
-            if (isApplicable(repo) && url != null) {
-                return new RawRepositories.Repository(id, url.toString(), repo.getReleases(), repo.getSnapshots());
-            } else {
-                return repo;
-            }
+        public Pom.Repository apply(Pom.Repository repo) {
+            return isApplicable(repo) && url != null ? repo.withUri(url) : repo;
         }
 
         /**
          * Returns true if this mirror is applicable to the supplied repository, otherwise false.
          */
-        public boolean isApplicable(RawRepositories.Repository repo) {
-            if (applicabilitySpec == null) {
-                applicabilitySpec = buildApplicabilitySpec();
+        public boolean isApplicable(Pom.Repository repo) {
+            if (applicability == null) {
+                applicability = buildApplicability();
             }
-            return applicabilitySpec.isApplicable(repo);
+            return applicability.test(repo);
         }
     }
 

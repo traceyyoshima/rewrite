@@ -30,6 +30,7 @@ import org.openrewrite.maven.MavenSettings;
 import org.openrewrite.maven.cache.CacheResult;
 import org.openrewrite.maven.cache.MavenPomCache;
 import org.openrewrite.maven.tree.Maven;
+import org.openrewrite.maven.tree.Pom;
 
 import javax.net.ssl.SSLException;
 import java.io.ByteArrayInputStream;
@@ -95,7 +96,7 @@ public class MavenPomDownloader {
     }
 
     public MavenMetadata downloadMetadata(String groupId, String artifactId,
-                                          List<RawRepositories.Repository> repositories) {
+                                          List<Pom.Repository> repositories) {
         Timer.Sample sample = Timer.start();
 
         return Stream.concat(repositories.stream().distinct(), Stream.of(SUPER_POM_REPOSITORY))
@@ -185,7 +186,7 @@ public class MavenPomDownloader {
                              String version,
                              @Nullable String relativePath,
                              @Nullable RawMaven containingPom,
-                             List<RawRepositories.Repository> repositories,
+                             List<Pom.Repository> repositories,
                              ExecutionContext ctx) {
         try {
             String versionMaybeDatedSnapshot = findDatedSnapshotVersionIfNecessary(groupId, artifactId, version, repositories);
@@ -314,31 +315,27 @@ public class MavenPomDownloader {
     }
 
     @Nullable
-    private RawRepositories.Repository normalizeRepository(RawRepositories.Repository repository) {
-
-        RawRepositories.Repository repoWithMirrors = applyMirrors(repository);
+    private Pom.Repository normalizeRepository(Pom.Repository repository) {
+        Pom.Repository repoWithMirrors = applyMirrors(repository);
         CacheResult<RawRepositories.Repository> result;
         try {
             result = mavenPomCache.computeRepository(repoWithMirrors, () -> {
                 // Always prefer to use https, fallback to http only if https isn't available
                 // URLs are case-sensitive after the domain name, so it can be incorrect to lowerCase() a whole URL
                 // This regex accepts any capitalization of the letters in "http"
-                String originalUrl = repoWithMirrors.getUrl();
-                String httpsUrl = originalUrl.replaceFirst("[hH][tT][tT][pP]://", "https://");
+                String httpsUri = repoWithMirrors.getUri().getScheme().equalsIgnoreCase("http") ?
+                        repoWithMirrors.getUri().toString().replaceFirst("[hH][tT][tT][pP]://", "https://") :
+                        repoWithMirrors.getUri().toString();
 
-                Request.Builder request = applyAuthentication(repoWithMirrors, new Request.Builder().url(httpsUrl).get());
+                Request.Builder request = applyAuthentication(repoWithMirrors, new Request.Builder()
+                        .url(httpsUri).get());
                 try (Response response = sendRequest.apply(request.build())) {
-                    if (response.isSuccessful()) {
-                        return new RawRepositories.Repository(
-                                repoWithMirrors.getId(),
-                                httpsUrl,
-                                repoWithMirrors.getReleases(),
-                                repoWithMirrors.getSnapshots());
-                    }
-                    return null;
+                    return response.isSuccessful() ?
+                            repoWithMirrors.withUri(URI.create(httpsUri)) :
+                            null;
                 } catch (SSLException e) {
                     // Fallback to http if https is unavailable and the original URL was an http URL
-                    if (httpsUrl.equals(originalUrl)) {
+                    if (httpsUri.equals(originalUrl)) {
                         return null;
                     }
                     try (Response httpResponse = sendRequest.apply(request.url(originalUrl).build())) {
@@ -364,7 +361,7 @@ public class MavenPomDownloader {
         return result.getData();
     }
 
-    private RawRepositories.Repository applyMirrors(RawRepositories.Repository repository) {
+    private Pom.Repository applyMirrors(Pom.Repository repository) {
         if (settings == null) {
             return repository;
         } else {
@@ -372,7 +369,7 @@ public class MavenPomDownloader {
         }
     }
 
-    private Request.Builder applyAuthentication(RawRepositories.Repository repository, Request.Builder request) {
+    private Request.Builder applyAuthentication(Pom.Repository repository, Request.Builder request) {
         MavenSettings.Server authInfo = serverIdToServer.get(repository.getId());
         if (authInfo != null) {
             String credentials = Credentials.basic(authInfo.getUsername(), authInfo.getPassword());

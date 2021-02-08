@@ -64,7 +64,9 @@ public class Maven extends Xml.Document {
     }
 
     public static List<Path> getMavenPoms(Path projectDir, ExecutionContext ctx) {
-        return getSources(projectDir, ctx, "pom.xml");
+        return getSources(projectDir, ctx, "pom.xml").stream()
+                .filter(p -> p.getFileName().toString().equals("pom.xml"))
+                .collect(Collectors.toList());
     }
 
     public List<Path> getJavaSources(ExecutionContext ctx) {
