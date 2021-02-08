@@ -15,6 +15,7 @@
  */
 package org.openrewrite.java.format
 
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.openrewrite.Issue
 import org.openrewrite.Recipe
@@ -570,7 +571,7 @@ interface SpacesTest : RecipeTest {
             """
     )
 
-    @Issue("https://github.com/openrewrite/rewrite/issues/234")
+    @Issue("#234")
     @Test
     fun withinAnnotationParametersSpaces(jp: JavaParser.Builder<*, *>) = assertChanged(
             parser = jp.styles(
@@ -591,6 +592,32 @@ interface SpacesTest : RecipeTest {
             """,
             after = """
                 @Foo(exclude = {"this", "that"}, callSuper = false)
+                class Test {
+                }
+            """
+    )
+
+    @Issue("#245")
+    @Disabled
+    @Test
+    fun withinAnnotationParametersSpacesStartWithSpace(jp: JavaParser.Builder<*, *>) = assertChanged(
+        parser = jp.styles(
+            listOf(NamedStyles("test", listOf(IntelliJ.spaces().run {
+                withWithin(within.withAnnotationParentheses(true))
+            })))
+        ).build(),
+        dependsOn = arrayOf("""
+                @interface Foo {
+                    String path() default "";
+                }
+            """),
+        before = """
+                @Foo( "/user/{userId}/edit")
+                class Test {
+                }
+            """,
+        after = """
+                @Foo("/user/{userId}/edit")
                 class Test {
                 }
             """
