@@ -18,19 +18,20 @@ package org.openrewrite.java.tree
 import org.junit.jupiter.api.Test
 import org.openrewrite.java.JavaParser
 import org.openrewrite.java.JavaTreeTest
+import org.openrewrite.java.NestingLevel
 
 interface WhileLoopTest : JavaTreeTest {
 
     @Test
     fun whileLoop(jp: JavaParser) = assertParsePrintAndProcess(
-        jp, JavaTreeTest.NestingLevel.Block, """
+        jp, NestingLevel.Block, """
                     while ( true ) { }
         """
     )
 
     @Test
     fun statementTerminatorForSingleLineWhileLoops(jp: JavaParser) = assertParsePrintAndProcess(
-        jp, JavaTreeTest.NestingLevel.Block, """
+        jp, NestingLevel.Block, """
                     while(true) test();
         """
     )

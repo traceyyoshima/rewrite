@@ -168,6 +168,10 @@ public interface J extends Serializable, Tree {
         @Nullable
         JContainer<Expression> arguments;
 
+        @With
+        @Getter
+        Position position;
+
         @Nullable
         public List<Expression> getArguments() {
             return arguments == null ? null : arguments.getElements();
@@ -223,8 +227,14 @@ public interface J extends Serializable, Tree {
             }
 
             public Annotation withArguments(@Nullable JContainer<Expression> arguments) {
-                return t.arguments == arguments ? t : new Annotation(t.id, t.prefix, t.markers, t.annotationType, arguments);
+                return t.arguments == arguments ? t : new Annotation(t.id, t.prefix, t.markers, t.annotationType, arguments, t.position);
             }
+        }
+
+        public enum Position {
+            FRONT,
+            AFTER_MODIFIERS,
+            AFTER_TYPE_PARAMETERS
         }
     }
 

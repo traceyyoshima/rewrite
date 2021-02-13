@@ -44,8 +44,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static java.lang.Math.max;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
+import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.StreamSupport.stream;
 import static org.openrewrite.Tree.randomId;
@@ -65,6 +64,7 @@ public class Java11ParserVisitor extends TreePathScanner<J, Space> {
     private final boolean relaxedClassTypeMatching;
     private final Collection<NamedStyles> styles;
     private final Map<String, JavaType.Class> sharedClassTypes;
+
     @Nullable
     private final LoggingHandler loggingHandler;
 
@@ -127,7 +127,7 @@ public class Java11ParserVisitor extends TreePathScanner<J, Space> {
             }
         }
 
-        return new J.Annotation(randomId(), fmt, Markers.EMPTY, name, args);
+        return new J.Annotation(randomId(), fmt, Markers.EMPTY, name, args, J.Annotation.Position.FRONT);
     }
 
     @Override
@@ -341,7 +341,7 @@ public class Java11ParserVisitor extends TreePathScanner<J, Space> {
     @Override
     public J visitClass(ClassTree node, Space fmt) {
         List<J.Annotation> annotations = convertAll(node.getModifiers().getAnnotations());
-        List<J.Modifier> modifiers = sortedFlags(node.getModifiers());
+        List<J.Modifier> modifiers = new ArrayList<>(sortedFlags(node.getModifiers()).values());
 
         JLeftPadded<J.ClassDeclaration.Kind> kind;
         if (hasFlag(node.getModifiers(), Flags.ENUM)) {
@@ -759,14 +759,18 @@ public class Java11ParserVisitor extends TreePathScanner<J, Space> {
     public J visitMethod(MethodTree node, Space fmt) {
         JCMethodDecl jcMethod = (JCMethodDecl) node;
 
-        List<J.Annotation> annotations = convertAll(node.getModifiers().getAnnotations());
-        List<J.Modifier> modifiers = sortedFlags(node.getModifiers());
+        NavigableMap<Integer, J.Modifier> modifiers = sortedFlags(node.getModifiers());
+        NavigableMap<Integer, J.Annotation> annotations = convertAnnotations(node.getModifiers(), modifiers,
+                node.getTypeParameters());
 
         // see https://docs.oracle.com/javase/tutorial/java/generics/methods.html
-        JContainer<J.TypeParameter> typeParams = node.getTypeParameters().isEmpty() ? null :
-                JContainer.build(sourceBefore("<"),
-                        convertAll(node.getTypeParameters(), commaDelim, t -> sourceBefore(">")),
-                        Markers.EMPTY);
+        JContainer<J.TypeParameter> typeParams = null;
+        if (!node.getTypeParameters().isEmpty()) {
+            typeParams = JContainer.build(sourceBefore("<"),
+                    convertAll(node.getTypeParameters(), commaDelim, t -> sourceBefore(">")),
+                    Markers.EMPTY);
+            cursor(max(annotations.isEmpty() ? 0 : annotations.lastKey(), cursor));
+        }
 
         TypeTree returnType = convertOrNull(node.getReturnType());
 
@@ -811,7 +815,9 @@ public class Java11ParserVisitor extends TreePathScanner<J, Space> {
         JLeftPadded<Expression> defaultValue = node.getDefaultValue() == null ? null :
                 padLeft(sourceBefore("default"), convert(node.getDefaultValue()));
 
-        return new J.MethodDeclaration(randomId(), fmt, Markers.EMPTY, annotations, modifiers, typeParams,
+        return new J.MethodDeclaration(randomId(), fmt, Markers.EMPTY,
+                new ArrayList<>(annotations.values()),
+                new ArrayList<>(modifiers.values()), typeParams,
                 returnType, name, params, throwss, body, defaultValue,
                 methodType(jcMethod.type, jcMethod.sym, name.getSimpleName()));
     }
@@ -1108,6 +1114,8 @@ public class Java11ParserVisitor extends TreePathScanner<J, Space> {
             }
         }
 
+        assert expr != null;
+
         //noinspection unchecked
         return (T) expr;
     }
@@ -1186,7 +1194,7 @@ public class Java11ParserVisitor extends TreePathScanner<J, Space> {
 
         List<J.Modifier> modifiers;
         if (node.getModifiers().pos >= 0) {
-            modifiers = sortedFlags(node.getModifiers());
+            modifiers = new ArrayList<>(sortedFlags(node.getModifiers()).values());
         } else {
             modifiers = emptyList(); // these are implicit modifiers, like "final" on try-with-resources variable declarations
         }
@@ -1309,7 +1317,8 @@ public class Java11ParserVisitor extends TreePathScanner<J, Space> {
 
     private <J2 extends J> JRightPadded<J2> convert(Tree t, Function<Tree, Space> suffix) {
         J2 j = convert(t);
-        JRightPadded<J2> rightPadded = j == null ? null : new JRightPadded<>(j, suffix.apply(t), Markers.EMPTY);
+        @SuppressWarnings("ConstantConditions") JRightPadded<J2> rightPadded = j == null ?
+                null : new JRightPadded<>(j, suffix.apply(t), Markers.EMPTY);
         cursor(max(endPos(t), cursor)); // if there is a non-empty suffix, the cursor may have already moved past it
         return rightPadded;
     }
@@ -1340,6 +1349,7 @@ public class Java11ParserVisitor extends TreePathScanner<J, Space> {
         return source.substring(0, ((JCTree) tree).getStartPosition()).chars().filter(c -> c == '\n').count() + 1;
     }
 
+    @Nullable
     private <T extends J> T convertOrNull(@Nullable Tree t) {
         return t == null ? null : convert(t);
     }
@@ -1367,7 +1377,66 @@ public class Java11ParserVisitor extends TreePathScanner<J, Space> {
         return converted;
     }
 
-    private JContainer<Expression> convertTypeParameters(List<? extends Tree> typeArguments) {
+    /**
+     * A list of annotations. Modifiers will have already been mapped by the time this is called,
+     * so after this method is called, the cursor will be set to after the last annotation or the
+     * set of modifiers whichever comes last.
+     */
+    private NavigableMap<Integer, J.Annotation> convertAnnotations(ModifiersTree modifiersTree,
+                                                                   NavigableMap<Integer, J.Modifier> mappedModifiers,
+                                                                   List<? extends TypeParameterTree> typeParams) {
+        NavigableMap<Integer, J.Annotation> annotations = new TreeMap<>();
+        JCTypeParameter lastTypeParameter = typeParams.isEmpty() ? null :
+                (JCTypeParameter) typeParams.get(typeParams.size() - 1);
+
+        cursor(((JCModifiers) modifiersTree).getStartPosition());
+
+        AnnotationTree setCursorAfter = null;
+
+        for (AnnotationTree annotationTree : modifiersTree.getAnnotations()) {
+            JCAnnotation annotation = (JCAnnotation) annotationTree;
+            int start = annotation.getStartPosition();
+            if (lastTypeParameter != null) {
+                if (endPos(lastTypeParameter) < start) {
+                    // annotation appears after type parameters
+                    cursor(endPos(lastTypeParameter));
+                    annotations.put(endPos(annotation), this.<J.Annotation>convert(annotation)
+                            .withPosition(J.Annotation.Position.AFTER_TYPE_PARAMETERS));
+                } else if (!mappedModifiers.isEmpty() && mappedModifiers.lastKey() < start) {
+                    // annotation appears after modifiers but before type parameters
+                    cursor(mappedModifiers.lastKey());
+                    annotations.put(endPos(annotation), this.<J.Annotation>convert(annotation)
+                            .withPosition(J.Annotation.Position.AFTER_MODIFIERS));
+                    setCursorAfter = annotation;
+                } else {
+                    // annotation appears first (before any modifiers or type parameters)
+                    annotations.put(endPos(annotation), convert(annotation));
+                    setCursorAfter = annotation;
+                }
+            } else if (!mappedModifiers.isEmpty() && mappedModifiers.lastKey() < start) {
+                // annotation appears after modifiers but before type parameters
+                cursor(mappedModifiers.lastKey());
+                annotations.put(endPos(annotation), this.<J.Annotation>convert(annotation)
+                        .withPosition(J.Annotation.Position.AFTER_MODIFIERS));
+                setCursorAfter = annotation;
+            } else {
+                // annotation appears first (before any modifiers or type parameters)
+                annotations.put(endPos(annotation), convert(annotation));
+                setCursorAfter = annotation;
+            }
+        }
+
+        int afterModifiers = mappedModifiers.isEmpty() ?
+                ((JCModifiers) modifiersTree).getStartPosition() :
+                mappedModifiers.lastKey() + mappedModifiers.lastEntry().getValue().toString().length();
+
+        cursor(max(setCursorAfter == null ? 0 : endPos(setCursorAfter), afterModifiers));
+
+        return annotations;
+    }
+
+    @Nullable
+    private JContainer<Expression> convertTypeParameters(@Nullable List<? extends Tree> typeArguments) {
         if (typeArguments == null) {
             return null;
         }
@@ -1476,11 +1545,10 @@ public class Java11ParserVisitor extends TreePathScanner<J, Space> {
     }
 
     @Nullable
-    private JavaType.Method methodType(Type selectType, @Nullable Symbol symbol, String methodName) {
+    private JavaType.Method methodType(@Nullable Type selectType, @Nullable Symbol symbol, String methodName) {
         // if the symbol is not a method symbol, there is a parser error in play
         Symbol.MethodSymbol genericSymbol = symbol instanceof Symbol.MethodSymbol ? (Symbol.MethodSymbol) symbol : null;
 
-        JavaType.Method type = null;
         if (genericSymbol != null && selectType != null) {
             Function<com.sun.tools.javac.code.Type, JavaType.Method.Signature> signature = t -> {
                 if (t instanceof MethodType) {
@@ -1513,7 +1581,7 @@ public class Java11ParserVisitor extends TreePathScanner<J, Space> {
             }
 
             return JavaType.Method.build(
-                    TypeUtils.asClass(type(genericSymbol.owner)),
+                    TypeUtils.asClassOrThrow(type(genericSymbol.owner)),
                     methodName,
                     genericSignature,
                     signature.apply(selectType),
@@ -1848,16 +1916,23 @@ public class Java11ParserVisitor extends TreePathScanner<J, Space> {
         return all;
     }
 
+    private static final NavigableMap<Integer, J.Modifier> EMPTY_MODIFIERS = Collections
+            .unmodifiableNavigableMap(new TreeMap<>());
+
     /**
      * Modifiers in the order they appear in the source, which is not necessarily the same as the order in
      * which they appear in the OpenJDK AST
+     *
+     * @param modifiers The AST modifiers tree.
+     * @return A map of modifiers in the order in which they appear in source and their
+     * starting source positions.
      */
-    private List<J.Modifier> sortedFlags(ModifiersTree modifiers) {
+    private NavigableMap<Integer, J.Modifier> sortedFlags(ModifiersTree modifiers) {
         if (modifiers.getFlags().isEmpty()) {
-            return emptyList();
+            return EMPTY_MODIFIERS;
         }
 
-        ArrayList<Modifier> sortedModifiers = new ArrayList<>();
+        List<Modifier> sortedModifiers = new ArrayList<>();
 
         boolean inComment = false;
         boolean inMultilineComment = false;
@@ -1901,8 +1976,9 @@ public class Java11ParserVisitor extends TreePathScanner<J, Space> {
             }
         }
 
-        List<J.Modifier> mappedModifiers = new ArrayList<>();
+        NavigableMap<Integer, J.Modifier> mappedModifiers = new TreeMap<>();
         for (Modifier mod : sortedModifiers) {
+            int modStart = cursor;
             Space modFormat = whitespace();
             cursor += mod.name().length();
             J.Modifier.Type type;
@@ -1946,7 +2022,7 @@ public class Java11ParserVisitor extends TreePathScanner<J, Space> {
                 default:
                     throw new IllegalArgumentException("Unexpected modifier " + mod);
             }
-            mappedModifiers.add(new J.Modifier(randomId(), modFormat, Markers.EMPTY, type));
+            mappedModifiers.put(modStart, new J.Modifier(randomId(), modFormat, Markers.EMPTY, type));
         }
 
         return mappedModifiers;

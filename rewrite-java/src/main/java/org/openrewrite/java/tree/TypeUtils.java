@@ -33,7 +33,7 @@ public class TypeUtils {
 
     public static boolean isString(@Nullable JavaType type) {
         return type == JavaType.Primitive.String ||
-                ( type instanceof JavaType.Class &&
+                (type instanceof JavaType.Class &&
                         "java.lang.String".equals(((JavaType.Class) type).getFullyQualifiedName())
                 );
     }
@@ -75,6 +75,13 @@ public class TypeUtils {
     @Nullable
     public static JavaType.Class asClass(@Nullable JavaType type) {
         return type instanceof JavaType.Class ? (JavaType.Class) type : null;
+    }
+
+    public static JavaType.Class asClassOrThrow(@Nullable JavaType type) {
+        if (type instanceof JavaType.Class) {
+            return (JavaType.Class) type;
+        }
+        throw new IllegalStateException("Expected class type but found null");
     }
 
     @Nullable
@@ -134,6 +141,7 @@ public class TypeUtils {
 
         return true;
     }
+
     static boolean deepEquals(@Nullable JavaType t, @Nullable JavaType t2) {
         return t == null ? t2 == null : t == t2 || t.deepEquals(t2);
     }

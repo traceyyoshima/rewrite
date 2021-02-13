@@ -60,23 +60,35 @@ interface AnnotationTest : JavaTreeTest {
     )
 
     @Test
-    @Issue("#254")
-    @Disabled
-    fun annotationAfterTypeParameters(jp: JavaParser) = assertParsePrintAndProcess(
+    @Issue("https://github.com/openrewrite/rewrite/issues/254")
+    fun annotationPositionsOnMethods(jp: JavaParser) = assertParsePrintAndProcess(
         jp, CompilationUnit, """
-           import java.util.List;
-           import java.lang.annotation.*;
-
-            @Target({ElementType.TYPE_USE})
-            @Retention(RetentionPolicy.RUNTIME)
-            public @interface Yo {}
-
-            public class A {
-                <T> @Yo T method(List<T> list, int element) {
-                    return list.get(element);
+            import java.lang.annotation.*;
+            
+            public class Test {
+                @Ho
+                public @Ho <T> @Ho T merryChristmas() {
+                    return null;
+                }
+                
+                @Ho
+                <T> @Ho T merryChristmas2() {
+                    return null;
+                }
+                
+                @Ho Test merryChristmas3() {
+                    return null;
                 }
             }
+            
+            @Target({ElementType.TYPE_USE})
+            @interface Hos {
+                Ho[] value();
+            }
+            
+            @Target({ElementType.TYPE_USE})
+            @Repeatable(Hos.class)
+            @interface Ho {}
         """
     )
-
 }

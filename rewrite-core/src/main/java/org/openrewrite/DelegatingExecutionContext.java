@@ -19,7 +19,7 @@ import org.openrewrite.internal.lang.Nullable;
 
 import java.util.function.Consumer;
 
-public class DelegatingExecutionContext implements ExecutionContext {
+public abstract class DelegatingExecutionContext implements ExecutionContext {
     private final ExecutionContext delegate;
 
     public DelegatingExecutionContext(ExecutionContext delegate) {

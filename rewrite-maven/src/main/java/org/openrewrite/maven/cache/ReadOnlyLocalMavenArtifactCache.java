@@ -32,7 +32,8 @@ public class ReadOnlyLocalMavenArtifactCache extends LocalMavenArtifactCache {
     }
 
     @Override
-    public @Nullable Path getArtifact(Pom.Dependency dependency) {
+    @Nullable
+    public Path getArtifact(Pom.Dependency dependency) {
         return super.getArtifact(dependency);
     }
 
