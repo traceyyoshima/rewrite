@@ -44,7 +44,7 @@ public class ChangeNonFluentSetterToFluentSetter extends Recipe {
     }
 
     private class ChangeNonFluentSetterToFluentSetterVisitor extends JavaIsoVisitor<ExecutionContext> {
-        private final JavaTemplate addFluentReturnTemplate = template("\nreturn this;").build();
+        private final JavaTemplate addFluentReturnTemplate = template("return this;").build();
         private final JavaType.FullyQualified classType = JavaType.Class.build(fullyQualifiedTargetTypeName);
 
         /**

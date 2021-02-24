@@ -181,12 +181,14 @@ interface ChangeNonFluentSetterToFluentSetterTest : JavaRecipeTest {
                     private String foo;
                     private String bar;
 
-                    public void setFoo(String value) {
+                    public C setFoo(String value) {
                         foo = value;
+                        return this;
                     }
 
-                    public void setBar(String value) {
+                    public C setBar(String value) {
                         bar = value;
+                        return this;
                     }
                 }
             """),
@@ -310,6 +312,11 @@ interface ChangeNonFluentSetterToFluentSetterTest : JavaRecipeTest {
                         bar = value;
                         return this;
                     }
+
+                    public A setBuz(String value) {
+                        buz = value;
+                        return this;
+                    }
                 }
             """),
         recipe = ChangeNonFluentSetterToFluentSetter("org.A"),
@@ -324,6 +331,7 @@ interface ChangeNonFluentSetterToFluentSetterTest : JavaRecipeTest {
                     A a = new A();
                     a.setFoo("foo");
                     a.setBar("bar");
+                    a.setBuz("buz");
                 }
             }
         """,
@@ -337,7 +345,8 @@ interface ChangeNonFluentSetterToFluentSetterTest : JavaRecipeTest {
                 public void testA1() {
                     A a = new A();
                     a.setFoo("foo")
-                            .setBar("bar");
+                            .setBar("bar")
+                            .setBuz("buz");
                 }
             }
         """
